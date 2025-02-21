@@ -22,15 +22,18 @@ const TaskSchema = new mongoose.Schema({
         default: 'Medium' 
     },
     dueDate: { 
-        type: Date 
+        type: Date,
+        required: true
     },
     assignedTo: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' 
+        ref: 'User' ,
+        required: true
     },
     project: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Project' 
+        ref: 'Project' ,
+        required: true
     },
 }, 
 { 

@@ -27,6 +27,7 @@ import {ApiResponse} from  "../utils/ApiResponse.js"
 const  generateAccessAndRefreshTokens = async(userId) =>{
     try {
         const user = await User.findById(userId)
+        console.log("Fetched User:", user);
         const accessToken = user.generateAccessToken()
         const refreshToken = user.generateRefreshToken()
 
@@ -158,11 +159,10 @@ const options = {
   secure: true
 }
 return res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(
-  200,
   {
     user: loggedInUser, accessToken, refreshToken
   },
-  "User Logged in successfully"
+  //"User Logged in successfully"
 )
 
 
