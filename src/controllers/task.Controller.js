@@ -1,7 +1,7 @@
 import { Task } from "../models/task.model.js";
 import { Project } from "../models/project.model.js";
 import { User } from "../models/user.model.js";
-
+import {ActivityLog} from "../models/activity.model.js";
 
 // ✅ Create a new task under a project
 export const createTask = async (req, res) => {
@@ -109,11 +109,11 @@ export const deleteTask = async (req, res) => {
   }
 };
 
-const Task = require("../models/task.model.js");
-const ActivityLog = require("../models/activityLog.model");
+//const Task = require("../models/task.model.js");
+//const ActivityLog = require("../models/activityLog.model");
 
 // Get Time Logs for a Task
-exports.getTaskTimeLogs = async (req, res) => {
+export const getTaskTimeLogs = async (req, res) => {
     try {
         const { taskId } = req.params;
         const logs = await ActivityLog.find({ task: taskId, action: "Logged Time" }).populate("user", "name");
@@ -125,7 +125,7 @@ exports.getTaskTimeLogs = async (req, res) => {
 };
 
 // Get Task-Level Productivity Insights
-exports.getTaskProductivityReport = async (req, res) => {
+export const getTaskProductivityReport = async (req, res) => {
     try {
         const { taskId } = req.params;
         const logs = await ActivityLog.find({ task: taskId, action: "Logged Time" });

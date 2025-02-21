@@ -3,6 +3,7 @@ import {ApiError} from  "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from  "../utils/ApiResponse.js"
+import {ActivityLog} from "../models/activity.model.js";
 
 /*const generateAccessAndRefreshTokens = async(userId) => {
   try {
@@ -221,11 +222,10 @@ const logoutUser = asyncHandler(async(req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"))
 })
 
-const User = require("../models/user.model");
-const ActivityLog = require("../models/activity.model.js");
+//const User = require("../models/user.model");
 
 // Log Work Hours (Manual Entry)
-exports.logWorkHours = async (req, res) => {
+export const logWorkHours = async (req, res) => {
     try {
         const { userId, projectId, taskId, startTime, endTime, billable } = req.body;
 
@@ -252,7 +252,7 @@ exports.logWorkHours = async (req, res) => {
 };
 
 // Get User Productivity Trends
-exports.getUserProductivity = async (req, res) => {
+export const getUserProductivity = async (req, res) => {
     try {
         const { userId } = req.params;
         const logs = await ActivityLog.find({ user: userId, action: "Logged Time" });

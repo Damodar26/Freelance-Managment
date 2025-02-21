@@ -7,8 +7,8 @@ import {
     getProjectById, 
     addMemberToProject, 
     deleteProject, 
-    logProjectWorkHours, 
-    getProjectProductivityInsights 
+    getProjectTimeLogs, 
+    getProjectProductivityReport 
 } from "../controllers/project.controller.js";
 
 const router = express.Router();
@@ -20,8 +20,8 @@ router.patch("/:projectId/add-member", verifyJWT, addMemberToProject);
 router.delete("/:projectId", verifyJWT, deleteProject);
 
 // Time tracking & productivity insights routes
-router.post("/:projectId/log-hours", verifyJWT, logProjectWorkHours);  // Log work hours for a project
-router.get("/:projectId/productivity-insights", verifyJWT, getProjectProductivityInsights);  // Fetch productivity data
+router.post("/:projectId/log-hours", verifyJWT, getProjectTimeLogs);  // Log work hours for a project
+router.get("/:projectId/productivity-insights", verifyJWT, getProjectProductivityReport);  // Fetch productivity data
 
 export default router;
 

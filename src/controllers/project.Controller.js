@@ -5,6 +5,7 @@ import {ApiError} from  "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from  "../utils/ApiResponse.js"
+import {ActivityLog} from "../models/activity.model.js";
 
 // Create a new project
 export const createProject = async (req, res) => {
@@ -88,11 +89,10 @@ export const addMemberToProject = async (req, res) => {
     res.status(500).json({ message: "Failed to add member", error });
   }
 };
-const Project = require("../models/project.model.js");
-const ActivityLog = require("../models/activity.model.js");
+//const ActivityLog = require("../models/activity.model.js");
 
 // Get Time Logs for a Project
-exports.getProjectTimeLogs = async (req, res) => {
+export const getProjectTimeLogs = async (req, res) => {
     try {
         const { projectId } = req.params;
         const logs = await ActivityLog.find({ project: projectId, action: "Logged Time" }).populate("user", "name");
@@ -104,7 +104,7 @@ exports.getProjectTimeLogs = async (req, res) => {
 };
 
 // Generate Project Productivity Report
-exports.getProjectProductivityReport = async (req, res) => {
+export const getProjectProductivityReport = async (req, res) => {
     try {
         const { projectId } = req.params;
         const logs = await ActivityLog.find({ project: projectId, action: "Logged Time" });
