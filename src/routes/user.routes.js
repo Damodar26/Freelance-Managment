@@ -1,11 +1,15 @@
-import {Router} from "express"
-import {registerUser} from "../controllers/user.controller.js"
-import {loginUser} from "../controllers/user.controller.js"
-import {upload} from "../middlewares/multer.middleware.js"
-import { verifyJWT } from "../middlewares/auth.middleware.js"
-import {logoutUser} from "../controllers/user.controller.js"
+import { Router } from "express";
+import { 
+    registerUser, 
+    loginUser, 
+    logoutUser, 
+    logWorkHours, 
+    getProductivityInsights 
+} from "../controllers/user.controller.js";
+import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
-const router = Router()
+const router = Router();
 
 router.route("/register").post(
     upload.fields([
@@ -18,13 +22,16 @@ router.route("/register").post(
             maxCount: 1
         }
     ]),
-    registerUser)
+    registerUser
+);
 
-router.route("/login").post(loginUser)
+router.route("/login").post(loginUser);
 
-//secured route 
+// Secured routes
+router.route("/logout").post(verifyJWT, logoutUser);
 
-router.route("/logout").post(verifyJWT, logoutUser)
+// Time tracking & productivity insights routes
+router.route("/log-hours").post(verifyJWT, logWorkHours);  // Log work hours
+router.route("/productivity-insights").get(verifyJWT, getProductivityInsights);  // Fetch productivity data
 
-
-export default router
+export default router;

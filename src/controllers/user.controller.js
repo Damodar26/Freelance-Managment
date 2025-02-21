@@ -221,6 +221,61 @@ const logoutUser = asyncHandler(async(req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"))
 })
 
+const User = require("../models/user.model");
+const ActivityLog = require("../models/activity.model.js");
+
+// Log Work Hours (Manual Entry)
+exports.logWorkHours = async (req, res) => {
+    try {
+        const { userId, projectId, taskId, startTime, endTime, billable } = req.body;
+
+        if (!userId || !projectId || !startTime || !endTime) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        const duration = (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60); // Convert to hours
+
+        const log = new ActivityLog({
+            user: userId,
+            project: projectId,
+            task: taskId || null,
+            action: "Logged Time",
+            description: `Logged ${duration.toFixed(2)} hours (${billable ? "Billable" : "Non-billable"})`,
+            timestamp: new Date(),
+        });
+
+        await log.save();
+        res.status(201).json({ message: "Work hours logged successfully", log });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+// Get User Productivity Trends
+exports.getUserProductivity = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const logs = await ActivityLog.find({ user: userId, action: "Logged Time" });
+
+        let totalHours = 0;
+        let billableHours = 0;
+
+        logs.forEach(log => {
+            const match = log.description.match(/(\d+(\.\d+)?) hours/);
+            if (match) {
+                const hours = parseFloat(match[1]);
+                totalHours += hours;
+                if (log.description.includes("Billable")) billableHours += hours;
+            }
+        });
+
+        res.status(200).json({ totalHours, billableHours });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+
 export {
     registerUser,
     loginUser,

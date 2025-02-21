@@ -26,9 +26,23 @@ const ProjectSchema = new Schema(
         ref: 'Task' 
       }
     ],
+    deadline: { 
+      type: Date 
+    }, // Added deadline field for tracking project completion time
+    activityLog: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ActivityLog'
+      }
+    ], // Tracks project-related activities (task creation, member additions)
+    totalHoursWorked: { 
+      type: Number, 
+      default: 0 
+    } // Tracks cumulative work hours on this project
   },
   { timestamps: true }
 );
+
 
 // Ensure owner is automatically added to members before saving
 ProjectSchema.pre("save", function (next) {

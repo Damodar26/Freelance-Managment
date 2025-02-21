@@ -3,42 +3,51 @@ import mongoose, {Schema} from "mongoose";
 
 
 
-const TaskSchema = new mongoose.Schema({
-    title: { 
+const TaskSchema = new mongoose.Schema(
+    {
+      title: { 
         type: String, 
         required: true 
-    },
-    description: { 
+      },
+      description: { 
         type: String
-     },
-    status: { 
+      },
+      status: { 
         type: String, 
         enum: ['To Do', 'In Progress', 'Done'], 
         default: 'To Do' 
-    },
-    priority: { 
+      },
+      priority: { 
         type: String, 
         enum: ['Low', 'Medium', 'High'], 
         default: 'Medium' 
-    },
-    dueDate: { 
-        type: Date,
-        required: true
-    },
-    assignedTo: { 
+      },
+      dueDate: { 
+        type: Date
+      }, // Made dueDate optional
+      assignedTo: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'User' ,
+        ref: 'User',
         required: true
-    },
-    project: { 
+      },
+      project: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'Project' ,
+        ref: 'Project',
         required: true
+      },
+      workHoursLogged: { 
+        type: Number, 
+        default: 0 
+      }, // Tracks time spent on task
+      activityLog: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'ActivityLog'
+        }
+      ] // Logs task-related updates
     },
-}, 
-{ 
-    timestamps: true 
-}
-);
+    { timestamps: true }
+  );
+  
 
 export const Task = mongoose.model('Task', TaskSchema);

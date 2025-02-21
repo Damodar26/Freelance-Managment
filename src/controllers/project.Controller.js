@@ -88,3 +88,43 @@ export const addMemberToProject = async (req, res) => {
     res.status(500).json({ message: "Failed to add member", error });
   }
 };
+const Project = require("../models/project.model.js");
+const ActivityLog = require("../models/activity.model.js");
+
+// Get Time Logs for a Project
+exports.getProjectTimeLogs = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const logs = await ActivityLog.find({ project: projectId, action: "Logged Time" }).populate("user", "name");
+
+        res.status(200).json({ logs });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+// Generate Project Productivity Report
+exports.getProjectProductivityReport = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const logs = await ActivityLog.find({ project: projectId, action: "Logged Time" });
+
+        let totalHours = 0;
+        let billableHours = 0;
+        let userHours = {};
+
+        logs.forEach(log => {
+            const match = log.description.match(/(\d+(\.\d+)?) hours/);
+            if (match) {
+                const hours = parseFloat(match[1]);
+                totalHours += hours;
+                if (log.description.includes("Billable")) billableHours += hours;
+                userHours[log.user] = (userHours[log.user] || 0) + hours;
+            }
+        });
+
+        res.status(200).json({ totalHours, billableHours, userHours });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};
