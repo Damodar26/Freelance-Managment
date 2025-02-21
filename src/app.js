@@ -1,31 +1,12 @@
 import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import invoiceRoutes from "./routes/invoiceRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 
 const app = express()
-const express = require('express');
-const dotenv = require('dotenv');
-const mongoose = require('./config/db'); // Database connection
-const invoiceRoutes = require('src/routes/invoiceRoutes.js');
-const errorHandler = require('./middleware/errorHandler');
-
-dotenv.config(); // Load environment variables
-
-// Middleware
-app.use(express.json()); // Parse JSON requests
-
-// Routes
-app.use('/api/invoices', invoiceRoutes);
-
-// Error handling middleware
-app.use(errorHandler)
-
-// Start server
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+;
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true
@@ -45,6 +26,6 @@ import userRouter from './routes/user.routes.js';
 app.use("/api/v1/users", userRouter);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 export {app}
-
