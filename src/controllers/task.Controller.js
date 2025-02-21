@@ -108,3 +108,42 @@ export const deleteTask = async (req, res) => {
     res.status(500).json({ message: "Failed to delete task", error: error.message });
   }
 };
+
+const Task = require("../models/task.model.js");
+const ActivityLog = require("../models/activityLog.model");
+
+// Get Time Logs for a Task
+exports.getTaskTimeLogs = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const logs = await ActivityLog.find({ task: taskId, action: "Logged Time" }).populate("user", "name");
+
+        res.status(200).json({ logs });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+// Get Task-Level Productivity Insights
+exports.getTaskProductivityReport = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const logs = await ActivityLog.find({ task: taskId, action: "Logged Time" });
+
+        let totalHours = 0;
+        let billableHours = 0;
+
+        logs.forEach(log => {
+            const match = log.description.match(/(\d+(\.\d+)?) hours/);
+            if (match) {
+                const hours = parseFloat(match[1]);
+                totalHours += hours;
+                if (log.description.includes("Billable")) billableHours += hours;
+            }
+        });
+
+        res.status(200).json({ totalHours, billableHours });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};

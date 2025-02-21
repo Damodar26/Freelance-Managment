@@ -16,7 +16,7 @@ const userSchema = new Schema(
             type: String,
             required: true,
             unique: true,
-            lowecase: true,
+            lowercase: true,
             trim: true, 
         },
         fullName: {
@@ -26,19 +26,33 @@ const userSchema = new Schema(
             index: true
         },
         avatar: {
-            type: String, // cloudinary url
+            type: String, // Cloudinary URL
             required: true,
         },
         coverImage: {
-            type: String, // cloudinary url
+            type: String, // Cloudinary URL
         },
-        ProjectHistory: [
+        projectHistory: [ // Tracks past projects
             {
                 type: Schema.Types.ObjectId,
                 ref: "Project"
             }
         ],
-        
+        activityHistory: [ // Tracks user activity logs
+            {
+                type: Schema.Types.ObjectId,
+                ref: "ActivityLog"
+            }
+        ],
+        totalHoursWorked: { 
+            type: Number, 
+            default: 0 
+        }, // Tracks total hours logged across projects
+        billableHours: { 
+            type: Number, 
+            default: 0 
+        }, // Tracks billable hours
+
         password: {
             type: String,
             required: [true, 'Password is required']
@@ -46,12 +60,12 @@ const userSchema = new Schema(
         refreshToken: {
             type: String
         }
-
     },
     {
         timestamps: true
     }
-)
+);
+
 
 userSchema.pre("save", async function (next) {
     if(!this.isModified("password")) return next();
