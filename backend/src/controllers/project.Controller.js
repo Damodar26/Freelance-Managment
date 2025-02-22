@@ -128,3 +128,20 @@ export const getProjectProductivityReport = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
+
+export const getProjectAnalytics = async (req, res) => {
+  try {
+    const projects = await Project.find().populate("tasks");
+    
+    const analytics = projects.map(project => ({
+      _id: project._id,
+      name: project.name,
+      totalHoursWorked: project.totalHoursWorked,
+      totalTasks: project.tasks.length
+    }));
+
+    res.status(200).json({projects: analytics});
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch project analytics", error });
+  }
+};
