@@ -147,3 +147,21 @@ export const getTaskProductivityReport = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
+
+
+export const getTaskAnalytics = async (req, res) => {
+  try {
+    const tasks = await Task.find().populate("project");
+
+    const analytics = tasks.map(task => ({
+      _id: task._id,
+      title: task.title,
+      priority: task.priority,
+      status: task.status
+    }));
+
+    res.status(200).json({analytics : analytics});
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch task analytics", error });
+  }
+};

@@ -23,5 +23,8 @@ router.delete("/:projectId", verifyJWT, deleteProject);
 router.post("/:projectId/log-hours", verifyJWT, getProjectTimeLogs);  // Log work hours for a project
 router.get("/:projectId/productivity-insights", verifyJWT, getProjectProductivityReport);  // Fetch productivity data
 
+router.get("/analytics", verifyJWT, getProjectAnalytics);
+
+
 export default router;
 

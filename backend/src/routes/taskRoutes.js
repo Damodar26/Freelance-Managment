@@ -7,7 +7,7 @@ import {
     deleteTask, 
     getTaskTimeLogs, 
     getTaskProductivityReport 
-} from "../controllers/task.controller.js";
+} from "../controllers/task.Controller.js";
 
 const router = express.Router();
 
@@ -19,6 +19,11 @@ router.delete("/:taskId", verifyJWT, deleteTask);
 // Time tracking & productivity insights routes
 router.post("/:taskId/log-hours", verifyJWT, getTaskTimeLogs);  // Log work hours for a task
 router.get("/:taskId/productivity-insights", verifyJWT, getTaskProductivityReport);  // Fetch productivity data
+
+router.get("/analytics", verifyJWT, getTaskAnalytics);
+
+
+
 
 export default router;
 
