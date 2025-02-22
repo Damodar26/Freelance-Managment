@@ -4,6 +4,8 @@ import cookieParser from "cookie-parser"
 import invoiceRoutes from "./routes/invoiceRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
+import expenseRoutes from "./routes/expenseRoutes.js";
+import budgetRoutes from "./routes/budgetRoutes.js";
 
 const app = express()
 ;
@@ -27,5 +29,8 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/invoices", invoiceRoutes);
+app.use("/api/expenses", expenseRoutes);
+app.use("/api/budgets", budgetRoutes);
+
 
 export {app}

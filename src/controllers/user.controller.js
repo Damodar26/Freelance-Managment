@@ -4,6 +4,9 @@ import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import {ApiResponse} from  "../utils/ApiResponse.js"
 import {ActivityLog} from "../models/activity.model.js";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
 
 /*const generateAccessAndRefreshTokens = async(userId) => {
   try {
@@ -118,59 +121,106 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 
 
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
+// Store OTPs in memory (consider using a database for production)
+const otpStore = new Map();
+
+// 🔹 **Login User & Send OTP**
 const loginUser = asyncHandler(async (req, res) => {
-  // req body -> data
-  // username and email
-  // find the user 
-  // password check
-  //access and refresh token
-  // send cookie
-  //successfully logged in
-  
-  const {email, username, password} = req.body
+    const { email, username, password } = req.body;
 
-  if (!username && !email) {
-    throw new ApiError(400, "username or email is required")
-  }
+    if (!username && !email) {
+        throw new ApiError(400, "Username or email is required");
+    }
 
+    // Find the user by email or username
+    const user = await User.findOne({ $or: [{ username }, { email }] });
 
-  const user = await User.findOne({
-    $or: [{username}, {email}]
-   })
-  
-  if(!user) {
-    throw new ApiError(404, "user does not exist")
-  }
+    if (!user) {
+        throw new ApiError(404, "User does not exist");
+    }
 
-  const isPasswordValid = await user.isPasswordCorrect(password)
+    // Check if password is correct
+    const isPasswordValid = await user.isPasswordCorrect(password);
+    if (!isPasswordValid) {
+        throw new ApiError(401, "Invalid User Credentials");
+    }
 
-  if(!isPasswordValid) {
-    throw new ApiError(401, "Invalid User Credentials ")
-  }
-  
+    // Generate a 6-digit OTP
+    const otp = crypto.randomInt(100000, 999999).toString();
+    otpStore.set(user.email, { otp, expiresAt: Date.now() + 5 * 60 * 1000 }); // Store OTP for 5 mins
 
-  const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+    // Send OTP via email
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: user.email,
+        subject: "Your Login OTP",
+        text: `Dear ${user.username},\n\nYour OTP for login is ${otp}. It will expire in 5 minutes.\n\nBest regards,\nFreelancer Manager`,
+    };
 
-  const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-)
+    await transporter.sendMail(mailOptions);
+    return res.status(200).json({ message: "OTP sent successfully. Please verify OTP to proceed.", email: user.email });
+});
 
-const options = {
-  httpOnly: true,
-  secure: true
-}
-return res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(
-  {
-    user: loggedInUser, accessToken, refreshToken
-  },
-  //"User Logged in successfully"
-)
+// 🔹 **Verify OTP & Complete Login**
+export const verifyOTP = asyncHandler(async (req, res) => {
+    const { email, otp } = req.body;
 
+    if (!email || !otp) {
+        throw new ApiError(400, "Email and OTP are required");
+    }
 
+    const storedOTP = otpStore.get(email);
 
-  
+    if (!storedOTP || storedOTP.expiresAt < Date.now()) {
+        throw new ApiError(400, "OTP expired or invalid");
+    }
 
-})
+    if (storedOTP.otp !== otp) {
+        throw new ApiError(400, "Invalid OTP");
+    }
+
+    // OTP is valid, remove it from store
+    otpStore.delete(email);
+
+    // Retrieve user details
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    // Generate access & refresh tokens
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+
+    // Exclude sensitive fields before sending response
+    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+    // Set secure HTTP-only cookies
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json({
+            message: "OTP verified successfully, login successful",
+            user: loggedInUser,
+            accessToken,
+            refreshToken,
+        });
+});
+
 
 /*const logoutUser = asyncHandler(async(req, res) => {
  await  User.findByIdAndUpdate(

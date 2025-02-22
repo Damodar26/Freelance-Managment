@@ -70,3 +70,33 @@ export const verifyPayment = asyncHandler(async (req, res) => {
 
   res.json({ message: "Payment verified successfully", invoice });
 });
+
+export const getInvoices = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const invoices = await Invoice.find({ user: userId }).sort({ createdAt: -1 });
+  res.json(invoices);
+});
+
+export const getInvoiceById = asyncHandler(async (req, res) => {
+  const invoice = await Invoice.findById(req.params.invoiceId);
+  if (!invoice) throw new ApiError(404, "Invoice not found");
+  res.json(invoice);
+});
+
+export const updateInvoice = asyncHandler(async (req, res) => {
+  const invoice = await Invoice.findById(req.params.invoiceId);
+  if (!invoice) throw new ApiError(404, "Invoice not found");
+
+  const { status, amount, dueDate } = req.body;
+  if (status) invoice.status = status;
+  if (amount) invoice.amount = amount;
+  if (dueDate) invoice.dueDate = dueDate;
+
+  await invoice.save();
+  res.json({ message: "Invoice updated successfully", invoice });
+});
+
+export const deleteInvoice = asyncHandler(async (req, res) => {
+  await Invoice.findByIdAndDelete(req.params.invoiceId);
+  res.json({ message: "Invoice deleted successfully" });
+});
