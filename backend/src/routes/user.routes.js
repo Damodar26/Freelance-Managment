@@ -6,7 +6,8 @@ import {
     loginUser, 
     logoutUser, 
     logWorkHours, 
-    getUserProductivity
+    getUserProductivity,
+    getUserById
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -30,7 +31,7 @@ router.route("/register").post(
 router.route("/login").post(loginUser);
 router.route("/verify-otp").post(verifyOTP);
 router.route("/send-otp").post(sendOTP);
-
+router.get("/:id", getUserById); 
 // Secured routes
 router.route("/logout").post(verifyJWT, logoutUser);
 

@@ -6,6 +6,8 @@ import projectRoutes from "./routes/projectRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import budgetRoutes from "./routes/budgetRoutes.js";
+import timelogRoutes from "./routes/timelogRoutes.js";
+
 
 const app = express()
 ;
@@ -32,6 +34,7 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/budgets", budgetRoutes);
+app.use("/api/time", timelogRoutes);
 
 
 export {app}

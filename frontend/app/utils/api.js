@@ -16,7 +16,7 @@ export const loginUser = async (credentials) => {
 };
 
 export const verifyOTP = async (otpData) => {
-  const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
+  const res = await fetch(`${BASE_URL}/users/verify-otp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(otpData),

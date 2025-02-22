@@ -1,23 +1,22 @@
 "use client"
+import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreVertical } from "lucide-react"
-import { useProjectStore } from "@/lib/store/projectStore"  // Import from store file instead
-// ... existing imports ...
-
-interface Project {
-  id: string
-  name: string
-  deadline: string
-  tasks: string
-  progress: number
-  team: string[]
-  status: "active" | "completed" | "archived"
-}
+import { useProjectStore } from "@/lib/store/projectStore"
+import { useAuthStore } from "@/lib/store/authStore"; // Import Auth Store // Import Project Store
 
 export default function ActiveProjects() {
-  const { projects, removeProject, moveProject } = useProjectStore()
+  const { projects, fetchProjects } = useProjectStore();
+  const { accessToken } = useAuthStore(); // Get token from Zustand
+
+  useEffect(() => {
+    if (accessToken) {
+      fetchProjects(); // Fetch projects when accessToken is available
+    }
+  }, [accessToken]);
+
   const activeProjects = projects.filter((p) => p.status === "active")
 
   const handleProjectAction = (action: string, id: string) => {
@@ -36,33 +35,34 @@ export default function ActiveProjects() {
 
   return (
     <div className="space-y-6 p-6">
-      {/* ... existing header ... */}
+      <h2 className="text-xl font-bold">Active Projects</h2>
 
       <div className="grid gap-4">
         {activeProjects.map((project) => (
           <Card key={project.id} className="p-6">
-            {/* ... existing project card layout ... */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleProjectAction("moveUp", project.id)}>Move Up</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleProjectAction("moveDown", project.id)}>
-                  Move Down
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleProjectAction("delete", project.id)} className="text-red-600">
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {/* ... rest of the card content ... */}
+            <div className="flex justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">{project.name}</h3>
+                <p className="text-sm text-gray-500">Deadline: {project.deadline || "No deadline"}</p>
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleProjectAction("moveUp", project.id)}>Move Up</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleProjectAction("moveDown", project.id)}>Move Down</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleProjectAction("delete", project.id)} className="text-red-600">
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </Card>
         ))}
       </div>
     </div>
   )
 }
-

@@ -1,4 +1,5 @@
-import { create } from 'zustand'
+import { create } from "zustand"
+import { useAuthStore } from "./authStore";
 
 interface Project {
   id: string
@@ -10,79 +11,63 @@ interface Project {
   status: "active" | "completed" | "archived"
 }
 
-interface Task {
-  id: string
-  name: string
-  project: string
-  deadline: string
-  priority: "High" | "Medium" | "Low"
-  status: "pending" | "completed"
-}
-
-interface TimeEntry {
-  id: string
-  project: string
-  task: string
-  duration: string
-  date: string
-}
-
-interface ProjectStore {
+interface ProjectState {
   projects: Project[]
-  tasks: Task[]
-  timeEntries: TimeEntry[]
-  addProject: (project: Project) => void
+  fetchProjects: (token: string) => Promise<void>
   removeProject: (id: string) => void
   moveProject: (id: string, direction: "up" | "down") => void
-  addTask: (task: Task) => void
-  completeTask: (id: string) => void
-  addTimeEntry: (entry: TimeEntry) => void
 }
+ // Import Auth Store
 
-export const useProjectStore = create<ProjectStore>((set) => ({
+export const useProjectStore = create((set) => ({
   projects: [],
-  tasks: [],
-  timeEntries: [],
-  addProject: (project) => 
-    set((state) => ({
-      ...state,
-      projects: [...state.projects, project]
-    })),
-  removeProject: (id) => 
-    set((state) => ({
-      ...state,
-      projects: state.projects.filter((p) => p.id !== id)
-    })),
-  moveProject: (id, direction) => 
-    set((state) => {
-      const index = state.projects.findIndex((p) => p.id === id)
-      if (index === -1) return state
-      
-      const newProjects = [...state.projects]
-      const newIndex = direction === 'up' ? index - 1 : index + 1
-      
-      if (newIndex < 0 || newIndex >= newProjects.length) return state
-      
-      const temp = newProjects[index]
-      newProjects[index] = newProjects[newIndex]
-      newProjects[newIndex] = temp
-      return { ...state, projects: newProjects }
-    }),
-  addTask: (task) => 
-    set((state) => ({
-      ...state,
-      tasks: [...state.tasks, task]
-    })),
-  completeTask: (id) => 
-    set((state) => ({
-      ...state,
-      tasks: state.tasks.map((task) =>
-        task.id === id ? { ...task, status: 'completed' } : task
-      )
-    })),
-  addTimeEntry: (entry) => 
-    set((state) => ({
-      ...state,
-      timeEntries: [...state.timeEntries, entry]
-    })),
-}))
+
+  fetchProjects: async () => {
+    const { accessToken } = useAuthStore.getState(); // Get the stored token
+
+    if (!accessToken) {
+      console.error("No access token found. User might not be logged in.");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`, // Send token in headers
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch projects");
+      }
+
+      const data = await response.json();
+      set({ projects: data }); // Update Zustand store with projects
+    } catch (error) {
+      console.error("Error fetching projects:", error.message);
+    }
+  },
+
+  removeProject: (id) => set((state) => ({
+    projects: state.projects.filter((p) => p.id !== id),
+  })),
+
+  moveProject: (id, direction) => set((state) => {
+    const index = state.projects.findIndex((p) => p.id === id);
+    if (index === -1) return state;
+
+    const newProjects = [...state.projects];
+
+    if (direction === "up" && index > 0) {
+      [newProjects[index], newProjects[index - 1]] = [newProjects[index - 1], newProjects[index]];
+    } else if (direction === "down" && index < newProjects.length - 1) {
+      [newProjects[index], newProjects[index + 1]] = [newProjects[index + 1], newProjects[index]];
+    }
+
+    return { projects: newProjects };
+  }),
+}));
+
+

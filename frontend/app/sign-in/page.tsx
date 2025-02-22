@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuthStore } from "@/lib/store/authStore";
 
 const login = async (email: string, password: string): Promise<void> => {
   try {
@@ -26,12 +27,12 @@ const login = async (email: string, password: string): Promise<void> => {
   }
 };
 
-const sentOTP = async (email: string): Promise<void> => {
+const sendOTP = async (email: string): Promise<void> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/sent-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email , isLogin: false}),
+      body: JSON.stringify({ email , isLogin: true}),
     });
 
     if (!response.ok) {
@@ -43,24 +44,32 @@ const sentOTP = async (email: string): Promise<void> => {
   }
 };
 
-const verifyOTP = async (email: string, otp: string): Promise<boolean> => {
+ // Import Zustand store
+
+async function verifyOTP(email: string , otp: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
+    const response = await fetch("/api/auth/verify-otp", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),
     });
 
-    if (!response.ok) {
-      return false;
-    }
+    const data = await response.json();
+    console.log(data)
 
-    return true;
+    /*if (!response.ok) {
+      throw new Error(data.message || "OTP verification failed");
+    }*/
+
+    // ✅ Store accessToken in Zustand
+    useAuthStore.setState({ user: data.user, accessToken: data.accessToken });
+
+    console.log("User logged in successfully:", data.user);
   } catch (error) {
-    console.error("Error verifying OTP:", error);
-    return false;
+    console.error("Error verifying OTP:", error.message);
   }
-};
+}
+
 
 export default function SignIn() {
   const router = useRouter()
@@ -101,15 +110,20 @@ export default function SignIn() {
   const handleOTPVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const isValid = await verifyOTP(email, otp);
+    
+    const token = await verifyOTP(email, otp);
+    
     setLoading(false);
-    if (isValid) {
+    console.log(token)
+    if (token) {
+       localStorage.setItem("authToken", token.accessToken) // Store token in localStorage
       alert("OTP verified successfully! Press OK to Continue");
       router.push("/dashboard");
     } else {
       alert("Invalid OTP. Please try again.");
     }
   };
+  
 
   const handleResendOTP = async () => {
     await sendOTP(email);

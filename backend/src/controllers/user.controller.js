@@ -181,15 +181,22 @@ export const verifyOTP = asyncHandler(async (req, res) => {
 
     const storedOTP = otpStore.get(email);
 
+    console.log("Stored OTP:", storedOTP); // Debugging
+    console.log("Received OTP:", otp);
+    console.log("Current Time:", Date.now(), "Expiry Time:", storedOTP?.expiresAt);
+
     if (!storedOTP || storedOTP.expiresAt < Date.now()) {
         throw new ApiError(400, "OTP expired or invalid");
     }
 
-    if (storedOTP.otp !== otp) {
+    // Convert OTP to string to prevent type mismatch
+    if (String(storedOTP.otp) !== String(otp)) {
         throw new ApiError(400, "Invalid OTP");
     }
 
-    // OTP is valid, remove it from store
+    console.log("OTP Matched! Proceeding...");
+
+    // OTP is valid, remove it from store AFTER verification
     otpStore.delete(email);
 
     // Retrieve user details
@@ -221,6 +228,7 @@ export const verifyOTP = asyncHandler(async (req, res) => {
             refreshToken,
         });
 });
+
 
 
 /*const logoutUser = asyncHandler(async(req, res) => {
@@ -325,6 +333,28 @@ export const getUserProductivity = async (req, res) => {
         res.status(500).json({ message: "Server error", error });
     }
 };
+
+import { useEffect, useState } from "react";
+
+export default function Dashboard() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch("http://localhost:8000/api/users/USER_ID");
+      const data = await res.json();
+      setUser(data);
+    }
+    fetchUser();
+  }, []);
+
+  return (
+    <div>
+      <h1>Welcome {user?.name}</h1>
+      <p>Accolades: {user?.accolades}</p>
+    </div>
+  );
+}
 
 
 export {

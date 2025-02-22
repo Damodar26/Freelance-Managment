@@ -31,12 +31,27 @@ export const createProject = async (req, res) => {
 // Get all projects for the logged-in user
 export const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find().populate("members", "username email");
-    res.status(200).json(projects);
+    // Fetch only active projects and populate team members
+    const projects = await Project.find({ status: "active" }).populate("members", "username email");
+
+    // Format data to match the frontend structure
+    const formattedProjects = projects.map((project) => ({
+      id: project._id.toString(), // Convert _id to string
+      name: project.name,
+      deadline: project.deadline?.toISOString() || "", // Convert Date to string
+      tasks: project.tasks.length.toString(), // Convert task count to string
+      progress: project.totalHoursWorked, // Assume totalHoursWorked represents progress
+      team: project.members.map((member) => member.username), // Extract team usernames
+      status: project.status,
+    }));
+
+    res.status(200).json(formattedProjects);
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve projects", error: error.message });
   }
 };
+
+
 
 // Get a specific project
 export const getProjectById = async (req, res) => {
