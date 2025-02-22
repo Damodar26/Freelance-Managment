@@ -2,6 +2,7 @@ import { Router } from "express";
 import { 
     registerUser,
     verifyOTP, 
+    sendOTP,
     loginUser, 
     logoutUser, 
     logWorkHours, 
@@ -28,6 +29,7 @@ router.route("/register").post(
 
 router.route("/login").post(loginUser);
 router.route("/verify-otp").post(verifyOTP);
+router.route("/send-otp").post(sendOTP);
 
 // Secured routes
 router.route("/logout").post(verifyJWT, logoutUser);

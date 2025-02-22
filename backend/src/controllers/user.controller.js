@@ -112,14 +112,14 @@ const otpStore = new Map();
 
 // 🔹 **Login User & Send OTP**
 const loginUser = asyncHandler(async (req, res) => {
-    const { email, username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username && !email) {
-        throw new ApiError(400, "Username or email is required");
+    if (!email) {
+        throw new ApiError(400, "Email is required");
     }
 
     // Find the user by email or username
-    const user = await User.findOne({ $or: [{ username }, { email }] });
+    const user = await User.findOne({ email });
 
     if (!user) {
         throw new ApiError(404, "User does not exist");
@@ -132,20 +132,44 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Generate a 6-digit OTP
+    await sendOTP({ body: { email, isLogin: true } }, res);
+});
+
+export const sendOTP = asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        throw new ApiError(400, "Email is required");
+    }
+
+    // Check if the user exists (for login) or ensure the email is new (for registration)
+    const user = await User.findOne({ email });
+
+    if (!user && req.body.isLogin) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user && !req.body.isLogin) {
+        throw new ApiError(409, "User already exists");
+    }
+
+    // Generate a 6-digit OTP
     const otp = crypto.randomInt(100000, 999999).toString();
-    otpStore.set(user.email, { otp, expiresAt: Date.now() + 5 * 60 * 1000 }); // Store OTP for 5 mins
+    otpStore.set(email, { otp, expiresAt: Date.now() + 5 * 60 * 1000 });
 
     // Send OTP via email
     const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "Your Login OTP",
-        text: `Dear ${user.username},\n\nYour OTP for login is ${otp}. It will expire in 5 minutes.\n\nBest regards,\nFreelancer Manager`,
+        to: email,
+        subject: "Your OTP Code",
+        text: `Your OTP is ${otp}. It will expire in 5 minutes.`,
     };
 
     await transporter.sendMail(mailOptions);
-    return res.status(200).json({ message: "OTP sent successfully. Please verify OTP to proceed.", email: user.email });
+
+    return res.status(200).json({ message: "OTP sent successfully", email });
 });
+
 
 // 🔹 **Verify OTP & Complete Login**
 export const verifyOTP = asyncHandler(async (req, res) => {
