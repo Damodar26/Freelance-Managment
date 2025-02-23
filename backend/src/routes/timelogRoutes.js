@@ -8,4 +8,4 @@ router.post("/start", verifyJWT, startTimeTracking);
 router.post("/stop", verifyJWT, stopTimeTracking);
 router.get("/insights", verifyJWT, getProductivityInsights);
 
-export default router;
+export default router; 
