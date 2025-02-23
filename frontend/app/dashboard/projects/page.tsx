@@ -75,14 +75,30 @@ export default function Projects() {
 
   return (
     <div className="space-y-6">
-      <div className="relative w-[500px] h-[500px] mb-4">
-        <Image
-          src="/Man trying to keep a work life balance.png"
-          alt="Projects Dashboard Banner"
-          fill
-          className="object-cover rounded-md"
-          priority
-        />
+      <div className="flex gap-4 items-center relative">
+        <div className="relative w-[500px] h-[500px] mb-4">
+          <Image
+            src="/Man trying to keep a work life balance.png"
+            alt="Projects Dashboard Banner"
+            fill
+            className="object-cover rounded-md"
+            priority
+          />
+        </div>
+        <div className="relative w-[500px] h-[500px] mb-4">
+          <Image
+            src="/female doctor talking on the phone.png"
+            alt="Project Management"
+            fill
+            className="object-cover rounded-md"
+            priority
+          />
+        </div>
+        <div className="absolute right-0 mr-4 flex flex-col">
+          <h1 className="text-[#00E054] text-6xl font-bold">INTROSPECT</h1>
+          <h1 className="text-[#000080] text-6xl font-bold">MANAGE</h1>
+          <h1 className="text-[#00E054] text-6xl font-bold">HUNT</h1>
+        </div>
       </div>
       
       {/* Tabs */}
