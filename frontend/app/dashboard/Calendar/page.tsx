@@ -113,8 +113,9 @@ export default function Calendar() {
         <button onClick={() => changeMonth(1)} className="bg-green-500 text-white py-2 px-4 rounded">Next Month</button>
       </div>
 
-      <button onClick={handleHighlight} className="bg-green-500 text-white py-2 px-4 rounded">Highlight Date</button>
-
+      <div className="flex justify-center mt-4">
+        <button onClick={handleHighlight} className="bg-green-500 text-white py-2 px-4 rounded">Highlight Date</button>
+      </div>
       {renderCalendar()}
 
       <div className="mt-6">
