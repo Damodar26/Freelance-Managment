@@ -163,6 +163,7 @@ export default function Analytics() {
           </Card>
         </TabsContent>
       </Tabs>
+       <img src="/Employee onboarding process, people diving into an aquarium.png" width={600} height={200} alt="Description of image" className="mx-auto" />
     </div>
   );
 }
