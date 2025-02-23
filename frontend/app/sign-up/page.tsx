@@ -51,11 +51,13 @@ const verifyOTP = async (email: string, otp: string): Promise<boolean> => {
 
 const registerUser = async (email: string, fullName: string, password: string, role: string) => {
   try {
+    console.log("Registering user with:", { email, fullName, password, role });
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, fullName, password, role }),
     });
+    console.log("Response from server:", response);
 
     if (!response.ok) {
       throw new Error("Failed to register user");
@@ -94,7 +96,7 @@ export default function SignUp() {
         } else {
           alert("Failed to register user.");
         }
-      router.push("/sign-in") // Redirect user to sign-in page
+      //router.push("/sign-in") // Redirect user to sign-in page
     } catch (error) {
       console.error("Error during signup:", error)
       alert("Failed to create account. Please try again.")
