@@ -9,8 +9,8 @@ import budgetRoutes from "./routes/budgetRoutes.js";
 import timelogRoutes from "./routes/timelogRoutes.js";
 
 
-const app = express()
-;
+const app = express();
+
 app.use(cors({
     origin: "http://localhost:3000",
     credentials: true
