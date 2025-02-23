@@ -257,6 +257,13 @@ export default function TimeTracking() {
           </div>
         </DialogContent>
       </Dialog>
+      <div className="flex items-center gap-4">
+        <img 
+          src="/Employees working on task management.png" 
+          alt="Log Time and View Details" 
+          className="h-90 w-90 object-contain"
+        />
+      </div>    
     </div>
   )
 }
