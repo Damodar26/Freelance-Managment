@@ -95,7 +95,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-        
         {/* New Image Carousel Section */}
         <section className="w-full overflow-hidden">
           <div className="relative w-full h-[400px] shadow-2xl">
@@ -107,11 +106,8 @@ export default function Home() {
               sizes="100vw"
               priority
             />
-            
-          
           </div>
         </section>
-
         <section className="w-full py-12 md:py-24 lg:py-32 bg-cream">
           <div className="container px-4 md:px-6 mx-auto">
             <div className="grid gap-6 lg:grid-cols-3 lg:gap-12">
@@ -139,6 +135,58 @@ export default function Home() {
             </div>
           </div>
         </section>
+        <section className="w-full py-12">
+          <div className="container mx-auto flex items-center">
+            <Image
+              src="/5405aff9dccd20f18582232b05b7f86e.jpg" // Replace with your image path
+              alt="Your Image"
+              width={300}
+              height={200}
+              className="w-full  rounded-lg object-cover"
+            />
+            <div className="ml-8">
+              <h2 className="text-4xl font-bold">YOUR OWN BOSS,</h2>
+              <h2 className="text-4xl font-bold">YOUR OWN BRAND,</h2>
+              <h2 className="text-4xl font-bold">YOUR OWN FUTURE.</h2>
+            </div>
+          </div>
+        </section>
+
+        {/* Four Medium Sized Images Aligned Side by Side */}
+        <section className="w-full py-12">
+          <div className="container mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Image
+              src="/young man in vr glasses.png"
+              alt="Image 1"
+              width={300}
+              height={200}
+              className="w-full h-auto rounded-lg object-cover"
+            />
+            <Image
+              src="/Isometric coding and programming icon.png"
+              alt="Image 2"
+              width={300}
+              height={200}
+              className="w-full h-auto rounded-lg object-cover"
+            />
+            <Image
+              src="/Isometric piggy bank and money savings.png"
+              alt="Image 3"
+              width={300}
+              height={200}
+              className="w-full h-auto rounded-lg object-cover"
+            />
+            <Image
+              src="/Trophy, medal and arrow in the target center.png"
+              alt="Image 4"
+              width={300}
+              height={200}
+              className="w-full h-auto rounded-lg object-cover"
+            />
+          </div>
+        </section>
+
+       
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-gray-500">© 2024 FreelanceFlow. All rights reserved.</p>
