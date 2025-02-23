@@ -14,8 +14,8 @@ interface Project {
 interface ProjectState {
   projects: Project[]
   fetchProjects: (token: string) => Promise<void>
-  removeProject: (id: string) => void
-  moveProject: (id: string, direction: "up" | "down") => void
+  removeProject: (id: string) => Promise<void>
+  moveProject: (id: string, direction: "up" | "down") => Promise<void>
 }
  // Import Auth Store
 
@@ -50,9 +50,32 @@ export const useProjectStore = create((set) => ({
     }
   },
 
-  removeProject: (id) => set((state) => ({
-    projects: state.projects.filter((p) => p.id !== id),
-  })),
+  removeProject: async (projectId) => {
+    try {
+      const token = localStorage.getItem("authToken"); // Get auth token
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // Attach token for authentication
+        },
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to delete project");
+  
+      // ✅ Update Zustand state only after successful backend deletion
+      set((state) => ({
+        projects: state.projects.filter((p) => p.id !== projectId),
+      }));
+  
+      console.log("Project deleted successfully:", data.message);
+    } catch (error) {
+      console.error("Error deleting project:", error.message);
+      alert("Failed to delete project!");
+    }
+  },
+  
 
   moveProject: (id, direction) => set((state) => {
     const index = state.projects.findIndex((p) => p.id === id);

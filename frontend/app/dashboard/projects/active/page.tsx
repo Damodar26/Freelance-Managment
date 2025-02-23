@@ -52,9 +52,9 @@ export default function ActiveProjects() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleProjectAction("moveUp", project.id)}>Move Up</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleProjectAction("moveDown", project.id)}>Move Down</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleProjectAction("delete", project.id)} className="text-red-600">
+                  <DropdownMenuItem onClick={() => handleProjectAction("moveUp", project._id)}>Move Up</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleProjectAction("moveDown", project._id)}>Move Down</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleProjectAction("delete", project._id)} className="text-red-600">
                     Delete
                   </DropdownMenuItem>
                 </DropdownMenuContent>

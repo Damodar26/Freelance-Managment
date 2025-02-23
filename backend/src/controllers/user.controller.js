@@ -47,55 +47,61 @@ const  generateAccessAndRefreshTokens = async(userId) =>{
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, password, role } = req.body; // Added role
- 
+    const { fullName, email, password, role } = req.body;
+
     if ([fullName, email, password, role].some((field) => field?.trim() === "")) {
-         throw new ApiError(400, "All fields are required");
+        throw new ApiError(400, "All fields are required");
     }
- 
+
     const existedUser = await User.findOne({ email });
- 
     if (existedUser) {
-         throw new ApiError(409, "User with email  already exists");
+        throw new ApiError(409, "User with email already exists");
     }
- 
-    const avatarLocalPath = req.files?.avatar?.[0]?.path;
- 
-   /* if (!avatarLocalPath) {
-         throw new ApiError(400, "Avatar is required");
-    }*/
- 
-    const avatar = req.files?.avatar?.[0]?.path 
-        ? await uploadOnCloudinary(req.files.avatar[0].path) 
-        : null;
-    const coverImage = req.files?.CoverImage?.[0]?.path 
-        ? await uploadOnCloudinary(req.files.CoverImage[0].path)
-        : null;
- 
-    /*if (!avatar) {
-         throw new ApiError(400, "Avatar upload failed");
-    }*/
- 
+
+    // Validate role
+    const validRoles = ["freelancer", "client"];
+    if (!validRoles.includes(role)) {
+        throw new ApiError(400, "Invalid role selected");
+    }
+
+    let avatar = null;
+    let coverImage = null;
+
+    if (req.files?.avatar?.[0]?.path) {
+        const uploadedAvatar = await uploadOnCloudinary(req.files.avatar[0].path);
+        if (!uploadedAvatar?.url) {
+            throw new ApiError(500, "Avatar upload failed");
+        }
+        avatar = uploadedAvatar.url;
+    }
+
+    if (req.files?.CoverImage?.[0]?.path) {
+        const uploadedCover = await uploadOnCloudinary(req.files.CoverImage[0].path);
+        if (!uploadedCover?.url) {
+            throw new ApiError(500, "Cover image upload failed");
+        }
+        coverImage = uploadedCover.url;
+    }
+
     const user = await User.create({
+        username: undefined,
         fullName,
-        avatar: avatar?.url,
-        coverImage: coverImage?.url || "",
+        avatar,
+        coverImage,
         email,
         password,
-        //username: username.toLowerCase(),
-        role // Store role in the database
+        role
     });
- 
-    const createdUser = await User.findById(user._id).select("-password -refreshToken");
- 
+
+    const createdUser = await User.findById(user._id).select("-password -email");
+
     if (!createdUser) {
-         throw new ApiError(500, "Something went wrong while registering the user");
+        throw new ApiError(500, "Something went wrong while registering the user");
     }
- 
-    return res.status(201).json(
-         new ApiResponse(200, createdUser, "User registered successfully")
-    );
- });
+
+    return res.status(201).json(new ApiResponse(200, createdUser, "User registered successfully"));
+});
+
  
 
 // Configure Nodemailer
