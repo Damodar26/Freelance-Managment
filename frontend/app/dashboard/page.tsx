@@ -110,6 +110,22 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      <div className="flex justify-center gap-6">
+        <Image
+          src="/Financial transactions and risk management.png"
+          alt="Descriptive alt text"
+          width={500}
+          height={100}
+          className="object-cover rounded-lg shadow-lg"
+        />
+        <Image
+          src="/Woman presenting a new product in a video advertisement.png"
+          alt="Descriptive alt text for second image"
+          width={500}
+          height={100}
+          className="object-cover rounded-lg shadow-lg"
+        />
+      </div>    
     </div>
   )
 }

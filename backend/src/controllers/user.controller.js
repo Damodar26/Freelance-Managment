@@ -7,6 +7,7 @@ import {ActivityLog} from "../models/activity.model.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";    
 
 /*const generateAccessAndRefreshTokens = async(userId) => {
   try {

@@ -10,8 +10,10 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuthStore } from "@/lib/store/authStore";
 
+
 const login = async (email: string, password: string): Promise<void> => {
   try {
+    console.log(process.env.NEXT_PUBLIC_API_URL);
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
