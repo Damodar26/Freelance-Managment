@@ -45,31 +45,66 @@ export default function Projects() {
   
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem("authToken");
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
       try {
         const [projectsRes, tasksRes, timeRes] = await Promise.all([
-          fetch("/api/projects"),
-          fetch("/api/tasks"),
-          fetch("/api/time"),
+          fetch(`http://localhost:8000/api/projects`, { method: "GET", headers }),
+          fetch(`http://localhost:8000/api/tasks`, { method: "GET", headers }),
+          fetch(`http://localhost:8000/api/projects/analytics`, { method: "GET", headers }),
         ]);
 
-        const [projectsData, tasksData, timeData] = await Promise.all([
-          projectsRes.json(),
-          tasksRes.json(),
-          timeRes.json(),
-        ]);
+        if (!projectsRes.ok) throw new Error(`Projects API Error: ${projectsRes.status}`);
+        if (!tasksRes.ok) throw new Error(`Tasks API Error: ${tasksRes.status}`);
+        if (!timeRes.ok) throw new Error(`Time API Error: ${timeRes.status}`);
 
-        setProjects(projectsData);
-        setTasks(tasksData);
-        setTimeEntries(timeData);
+        const projects = await projectsRes.json();
+        const tasks = await tasksRes.json();
+        const time = await timeRes.json();
+
+        console.log("Fetched projects:", projects);
+        console.log("Fetched tasks:", tasks);
+        console.log("Fetched time:", time);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+
+      /*try {
+        const token = localStorage.getItem("authToken");
+        // Retrieve the token from localStorage (or another secure storage location)
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Attach JWT token for authentication
+        };
+        
+        const [projectsRes, tasksRes, timeRes] = await Promise.all([
+          fetch("http://localhost:8000/api/projects", { method: "GET", headers }), // Fetch projects
+          fetch("http://localhost:8000/api/tasks", { method: "GET", headers }), // Fetch tasks
+          fetch("http://localhost:8000/api/projects/analytics", { method: "GET", headers }), // Fetch time tracking analytics
+        ]);
+        
+        const projects = await projectsRes.json();
+        const tasks = await tasksRes.json();
+        const time = await timeRes.json();
+        console.log(Array.isArray(projects)); // Should print true
+        console.log("Project structure:", projects);
+
+        console.log({ projects, tasks, time });
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }*/
     };
 
     fetchData();
   }, []);
 
   const handleTabChange = (value: string) => {
+    console.log("Tab changed to:", value);
     router.push(`/dashboard/projects/${value}`);
   };
 
@@ -125,7 +160,7 @@ export default function Projects() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="bg-[#f5faf5] border-none p-6">
           <h3 className="font-semibold mb-2">Active Projects</h3>
-          <p className="text-2xl font-semibold mb-2">{projects.filter(p => p.status === "active").length}</p>
+          <p className="text-2xl font-semibold mb-2">{projects?.filter(p => p.status?.toLowerCase() === "active").length || 0}</p>
           <Button onClick={() => router.push("/dashboard/projects/active")} className="bg-[#00E054] text-white">
             View All
           </Button>

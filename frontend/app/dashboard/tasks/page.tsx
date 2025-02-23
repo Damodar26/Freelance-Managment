@@ -1,16 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { create } from "zustand"
-
-interface ProjectStore {
-  tasks: Task[]
-  completeTask: (id: string) => void
-  addTask: (task: Task) => void
-}
 
 interface Task {
   id: string
@@ -19,42 +13,46 @@ interface Task {
   description: string
 }
 
-export const useProjectStore = create<ProjectStore>((set) => ({
-  tasks: [
-    {
-      id: "1",
-      status: "pending",
-      title: "Design System Updates",
-      description: "Update the design system components",
-    },
-    // Add more initial tasks
-  ],
-  completeTask: (id) =>
-    set((state) => ({
-      tasks: state.tasks.map((t) =>
-        t.id === id ? { ...t, status: t.status === "pending" ? "completed" : "pending" } : t,
-      ),
-    })),
-  addTask: (task) => set((state) => ({ tasks: [...state.tasks, task] })),
-}))
-
 export default function Tasks() {
-  const { tasks, completeTask, addTask } = useProjectStore() as ProjectStore
+  const searchParams = useSearchParams()
+  const projectId = searchParams.get("projectId") // Get projectId from URL params
+  const [tasks, setTasks] = useState<Task[]>([])
   const [activeTab, setActiveTab] = useState("pending")
 
-  const filteredTasks = tasks.filter((task) =>
-    activeTab === "pending" ? task.status === "pending" : task.status === "completed",
-  )
+  useEffect(() => {
+    const fetchTasks = async () => {
+      if (!projectId) return
+      try {
+        const response = await fetch(`http://localhost/8000/api/projects/${projectId}/tasks`)
+        if (!response.ok) throw new Error("Failed to fetch tasks")
 
-  const handleCompleteTask = (id: string) => {
-    completeTask(id)
+        const data = await response.json()
+        setTasks(data)
+      } catch (error) {
+        console.error("Error fetching tasks:", error)
+      }
+    }
+
+    fetchTasks()
+  }, [projectId])
+
+  const handleCompleteTask = async (id: string) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === id ? { ...task, status: task.status === "pending" ? "completed" : "pending" } : task
+      )
+    )
   }
+
+  const filteredTasks = tasks.filter((task) =>
+    activeTab === "pending" ? task.status === "pending" : task.status === "completed"
+  )
 
   const TaskList = ({
     tasks,
     onComplete,
   }: {
-    tasks: Array<{ id: string; status: string; title: string; description: string }>
+    tasks: Task[]
     onComplete: (id: string) => void
   }) => (
     <div className="grid gap-4">
@@ -88,4 +86,3 @@ export default function Tasks() {
     </div>
   )
 }
-

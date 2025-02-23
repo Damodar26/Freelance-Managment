@@ -32,10 +32,21 @@ export default function Analytics() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAnalytics = async () => {
+    const fetchAnalytics = async () => { 
       try {
-        const projectResponse = await axios.get<{ projects: ProjectAnalytics[] }>(`${API_BASE_URL}/projects/analytics`);
-        const taskResponse = await axios.get<{ tasks: TaskAnalytics[] }>(`${API_BASE_URL}/tasks/analytics`);
+        const token = localStorage.getItem("authToken"); // Get token from storage
+    
+        const projectResponse = await axios.get<{ projects: ProjectAnalytics[] }>(
+          `${API_BASE_URL}/projects/analytics`,
+          { headers: { Authorization: `Bearer ${token}` } } // Add token
+        );
+    
+        const taskResponse = await axios.get<{ tasks: TaskAnalytics[] }>(
+          `${API_BASE_URL}/tasks/analytics`,
+          { headers: { Authorization: `Bearer ${token}` } } // Add token
+        );
+        console.log("Project Analytics Response:", projectResponse.data);
+        console.log("Task Analytics Response:", taskResponse.data);
 
         setProjectAnalytics(projectResponse.data.projects || []);
         setTaskAnalytics(taskResponse.data.tasks || []);
@@ -54,7 +65,7 @@ export default function Analytics() {
   }, []);
 
   if (loading) return <p>Loading analytics...</p>;
-  if (error) return <p className="text-red-500">Error: {error}</p>;
+  //if (error) return <p className="text-red-500">Error: {error}</p>;
 
   // ✅ Transform Data for Charts
   const priorityData = [
@@ -62,7 +73,9 @@ export default function Analytics() {
     { name: "Medium", value: taskAnalytics.filter((task) => task.priority === "Medium").length },
     { name: "Low", value: taskAnalytics.filter((task) => task.priority === "Low").length },
   ];
-
+  console.log("Task Analytics:", taskAnalytics);
+  console.log("Priority Data:", priorityData);
+  
   const colors = ["#ff4d4d", "#ffcc00", "#66cc66"]; // High (Red), Medium (Yellow), Low (Green)
 
   return (

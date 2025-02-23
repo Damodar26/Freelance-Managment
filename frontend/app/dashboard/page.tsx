@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Badge } from "lucide-react"
 
+
 export default function Dashboard() {
   return (
     <div className="space-y-8">
