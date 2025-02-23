@@ -9,13 +9,13 @@ import { useAuthStore } from "@/lib/store/authStore"; // Import Auth Store // Im
 
 export default function ActiveProjects() {
   const { projects, fetchProjects } = useProjectStore();
-  const { accessToken } = useAuthStore(); // Get token from Zustand
+  const token = localStorage.getItem("authToken"); // Get token from Zustand
 
   useEffect(() => {
-    if (accessToken) {
+    if (token) {
       fetchProjects(); // Fetch projects when accessToken is available
     }
-  }, [accessToken]);
+  }, [token]);
 
   const activeProjects = projects.filter((p) => p.status === "active")
 

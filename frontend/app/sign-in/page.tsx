@@ -29,7 +29,7 @@ const login = async (email: string, password: string): Promise<void> => {
 
 const sendOTP = async (email: string): Promise<void> => {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/sent-otp`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email , isLogin: true}),
@@ -46,29 +46,33 @@ const sendOTP = async (email: string): Promise<void> => {
 
  // Import Zustand store
 
-async function verifyOTP(email: string , otp: string) {
+ async function verifyOTP(email: string, otp: string) {
   try {
-    const response = await fetch("/api/auth/verify-otp", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/verify-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, otp }),
     });
 
-    const data = await response.json();
-    console.log(data)
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "OTP verification failed");
+    }
 
-    /*if (!response.ok) {
-      throw new Error(data.message || "OTP verification failed");
-    }*/
+    const data = await response.json();
+    console.log("OTP Verification Response:", data);
 
     // ✅ Store accessToken in Zustand
     useAuthStore.setState({ user: data.user, accessToken: data.accessToken });
+    localStorage.setItem("authToken", data.accessToken);
 
-    console.log("User logged in successfully:", data.user);
+    return data; // ✅ Return the parsed data
   } catch (error) {
     console.error("Error verifying OTP:", error.message);
+    throw error; // ✅ Re-throw the error to be handled in `handleOTPVerification`
   }
 }
+
 
 
 export default function SignIn() {
@@ -87,7 +91,8 @@ export default function SignIn() {
       // Here you would make an API call to your backend to:
       // 1. Create the user account
       // 2. Send OTP to the provided email
-      await login(email, password) // implement this function to connect with your backend
+      login(email, password)
+      sendOTP(email)  // implement this function to connect with your backend
       setShowOTP(true)
     } catch (error) {
       console.error("Error during sign in:", error)
@@ -101,7 +106,7 @@ export default function SignIn() {
     try {
       await sendOTP(email);
       alert("If this email exists in our system, you will receive a password reset OTP.");
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (error) {
       alert("Failed to send OTP. Please try again.");
     }
@@ -110,19 +115,26 @@ export default function SignIn() {
   const handleOTPVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    const token = await verifyOTP(email, otp);
-    
-    setLoading(false);
-    console.log(token)
-    if (token) {
-       localStorage.setItem("authToken", token.accessToken) // Store token in localStorage
-      alert("OTP verified successfully! Press OK to Continue");
-      router.push("/dashboard");
-    } else {
-      alert("Invalid OTP. Please try again.");
+  
+    try {
+      const data = await verifyOTP(email, otp); // ✅ Wait for the response
+  
+      setLoading(false);
+      console.log(data);
+  
+      if (data.accessToken) {
+        localStorage.setItem("authToken", data.accessToken);
+        alert("OTP verified successfully! Press OK to Continue");
+        console.log("Navigating to dashboard...");
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("Error:", error);
+      alert("OTP verification failed!!");
     }
   };
+  
   
 
   const handleResendOTP = async () => {

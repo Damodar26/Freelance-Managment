@@ -6,7 +6,8 @@ import {
     updateTaskStatus, 
     deleteTask, 
     getTaskTimeLogs, 
-    getTaskProductivityReport 
+    getTaskProductivityReport,
+    getTaskAnalytics
 } from "../controllers/task.Controller.js";
 
 const router = express.Router();

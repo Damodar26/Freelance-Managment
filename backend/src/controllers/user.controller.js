@@ -132,7 +132,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Generate a 6-digit OTP
-    await sendOTP({ body: { email, isLogin: true } }, res);
+    //await sendOTP({ body: { email, isLogin: true } }, res);
 });
 
 export const sendOTP = asyncHandler(async (req, res) => {
@@ -156,7 +156,6 @@ export const sendOTP = asyncHandler(async (req, res) => {
     // Generate a 6-digit OTP
     const otp = crypto.randomInt(100000, 999999).toString();
     otpStore.set(email, { otp, expiresAt: Date.now() + 5 * 60 * 1000 });
-
     // Send OTP via email
     const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -173,61 +172,41 @@ export const sendOTP = asyncHandler(async (req, res) => {
 
 // 🔹 **Verify OTP & Complete Login**
 export const verifyOTP = asyncHandler(async (req, res) => {
-    const { email, otp } = req.body;
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            return res.status(400).json({ error: "Email and OTP are required" });
+        }
 
-    if (!email || !otp) {
-        throw new ApiError(400, "Email and OTP are required");
-    }
+        const storedOTP = otpStore.get(email);
+        if (!storedOTP || storedOTP.expiresAt < Date.now()) {
+            return res.status(400).json({ error: "OTP expired or invalid" });
+        }
 
-    const storedOTP = otpStore.get(email);
+        if (String(storedOTP.otp) !== String(otp)) {
+            return res.status(400).json({ error: "Invalid OTP" });
+        }
 
-    console.log("Stored OTP:", storedOTP); // Debugging
-    console.log("Received OTP:", otp);
-    console.log("Current Time:", Date.now(), "Expiry Time:", storedOTP?.expiresAt);
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
 
-    if (!storedOTP || storedOTP.expiresAt < Date.now()) {
-        throw new ApiError(400, "OTP expired or invalid");
-    }
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+        const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
 
-    // Convert OTP to string to prevent type mismatch
-    if (String(storedOTP.otp) !== String(otp)) {
-        throw new ApiError(400, "Invalid OTP");
-    }
-
-    console.log("OTP Matched! Proceeding...");
-
-    // OTP is valid, remove it from store AFTER verification
-    otpStore.delete(email);
-
-    // Retrieve user details
-    const user = await User.findOne({ email });
-    if (!user) {
-        throw new ApiError(404, "User not found");
-    }
-
-    // Generate access & refresh tokens
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
-
-    // Exclude sensitive fields before sending response
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
-
-    // Set secure HTTP-only cookies
-    const options = {
-        httpOnly: true,
-        secure: true,
-    };
-
-    return res
-        .status(200)
-        .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
-        .json({
-            message: "OTP verified successfully, login successful",
+        otpStore.delete(email);
+        return res.status(200).json({
+            message: "OTP verified successfully",
             user: loggedInUser,
             accessToken,
             refreshToken,
         });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
 });
+
 
 
 
@@ -334,27 +313,17 @@ export const getUserProductivity = async (req, res) => {
     }
 };
 
-import { useEffect, useState } from "react";
-
-export default function Dashboard() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    async function fetchUser() {
-      const res = await fetch("http://localhost:8000/api/users/USER_ID");
-      const data = await res.json();
-      setUser(data);
+export const getUserById = async (req, res) => {
+    try {
+      const user = await User.findById(req.params.id).select("-password");
+      if (!user) return res.status(404).json({ message: "User not found" });
+  
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Server error" });
     }
-    fetchUser();
-  }, []);
-
-  return (
-    <div>
-      <h1>Welcome {user?.name}</h1>
-      <p>Accolades: {user?.accolades}</p>
-    </div>
-  );
-}
+  };
+//import { useEffect, useState } from "react";
 
 
 export {

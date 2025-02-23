@@ -8,7 +8,8 @@ import {
     addMemberToProject, 
     deleteProject, 
     getProjectTimeLogs, 
-    getProjectProductivityReport 
+    getProjectProductivityReport ,
+    getProjectAnalytics
 } from "../controllers/project.controller.js";
 
 const router = express.Router();

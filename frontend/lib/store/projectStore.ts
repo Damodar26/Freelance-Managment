@@ -23,7 +23,7 @@ export const useProjectStore = create((set) => ({
   projects: [],
 
   fetchProjects: async () => {
-    const { accessToken } = useAuthStore.getState(); // Get the stored token
+    const accessToken = localStorage.getItem("authToken"); // Get the stored token
 
     if (!accessToken) {
       console.error("No access token found. User might not be logged in.");
@@ -31,7 +31,7 @@ export const useProjectStore = create((set) => ({
     }
 
     try {
-      const response = await fetch("/api/projects", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
