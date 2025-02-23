@@ -15,7 +15,7 @@ export default function About() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
-        <Card className="bg-secondary/50">
+        <Card className="bg-primary/50">
           <CardHeader className="text-center">
             <Flame className="w-12 h-12 mx-auto text-primary mb-4" />
             <CardTitle>Innovation</CardTitle>
@@ -25,7 +25,7 @@ export default function About() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary/50">
+        <Card className="bg-primary/50">
           <CardHeader className="text-center">
             <Users className="w-12 h-12 mx-auto text-primary mb-4" />
             <CardTitle>Community</CardTitle>
@@ -35,7 +35,7 @@ export default function About() {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary/50">
+        <Card className="bg-primary/50">
           <CardHeader className="text-center">
             <Shield className="w-12 h-12 mx-auto text-primary mb-4" />
             <CardTitle>Trust</CardTitle>
