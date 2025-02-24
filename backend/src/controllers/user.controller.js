@@ -126,17 +126,27 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // Find the user by email or username
-    const user = await User.findOne({ email });
-
-    if (!user) {
-        throw new ApiError(404, "User does not exist");
-    }
+   // const user = await User.findOne({ email });
+   const user = await User.findOne({ email });
+   if (!user) {
+       return res.status(404).json({ error: "User not found" });
+   }
 
     // Check if password is correct
     const isPasswordValid = await user.isPasswordCorrect(password);
     if (!isPasswordValid) {
         throw new ApiError(401, "Invalid User Credentials");
     }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+    const loggedInUser = await User.findById(user._id).select("-password -email");
+
+    return res.status(200).json({
+        message: "logged in successfully",
+        user: loggedInUser,
+        accessToken,
+        refreshToken,
+    });
 
     // Generate a 6-digit OTP
     //await sendOTP({ body: { email, isLogin: true } }, res);

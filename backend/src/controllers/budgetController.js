@@ -19,7 +19,7 @@ export const setBudget = asyncHandler(async (req, res) => {
   } else {
     budget = new Budget({ user: userId, monthlyBudget });
   }
-
+  
   await budget.save();
 
   res.status(200).json({ message: "Budget set successfully", budget });

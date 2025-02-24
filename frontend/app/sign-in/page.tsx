@@ -21,8 +21,18 @@ const login = async (email: string, password: string): Promise<void> => {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to login");
+      const errorText = await response.text();
+      throw new Error(errorText || "Login failed");
     }
+
+    const data = await response.json();
+    console.log("Login state:", data);
+
+    // ✅ Store accessToken in Zustand
+    useAuthStore.setState({ user: data.user, accessToken: data.accessToken });
+    localStorage.setItem("authToken", data.accessToken);
+
+    return data;
   } catch (error) {
     console.error("Error while login:", error);
     throw error;
@@ -93,9 +103,19 @@ export default function SignIn() {
       // Here you would make an API call to your backend to:
       // 1. Create the user account
       // 2. Send OTP to the provided email
-      login(email, password)
-      sendOTP(email)  // implement this function to connect with your backend
-      setShowOTP(true)
+      const data = await login(email, password) // ✅ Wait for the response
+  
+      setLoading(false);
+      console.log(data);
+  
+      if (data.accessToken) {
+        localStorage.setItem("authToken", data.accessToken);
+        alert("Logged in successfully! Press OK to Continue");
+        console.log("Navigating to dashboard...");
+        router.push("/dashboard");
+      }
+      //sendOTP(email)  // implement this function to connect with your backend
+      //setShowOTP(true)
     } catch (error) {
       console.error("Error during sign in:", error)
       alert("Failed to login. Please try again.")
@@ -171,7 +191,29 @@ export default function SignIn() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="sign-in">
-          {!showOTP ? (
+          <form onSubmit={handleSignIn}>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" placeholder="Enter your email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" placeholder="Enter your password" type="password" required value={password} onChange={(p) => setPassword(p.target.value)}/>
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-sm text-blue-600 hover:text-blue-800 text-right"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+                <Button type="submit" className="w-full">
+                  Sign In
+                </Button>
+              </div>
+            </form>
+          {/*{!showOTP ? (
             <form onSubmit={handleSignIn}>
               <div className="grid gap-4">
                 <div className="grid gap-2">
@@ -211,7 +253,7 @@ export default function SignIn() {
               >
                 Resend OTP
               </Button>
-            </form>)}
+            </form>)} */}
           </TabsContent>
         </Tabs>
       </div>

@@ -15,18 +15,35 @@ interface Task {
 
 export default function Tasks() {
   const searchParams = useSearchParams()
-  const projectId = searchParams.get("projectId") // Get projectId from URL params
+  const projectId = searchParams.get("projectId") 
+  console.log(projectId)// Get projectId from URL params
   const [tasks, setTasks] = useState<Task[]>([])
   const [activeTab, setActiveTab] = useState("pending")
 
   useEffect(() => {
     const fetchTasks = async () => {
       if (!projectId) return
-      try {
-        const response = await fetch(`http://localhost/8000/api/projects/${projectId}/tasks`)
-        if (!response.ok) throw new Error("Failed to fetch tasks")
 
+      const authToken = localStorage.getItem("authToken")
+      if (!authToken) {
+        console.error("No auth token found")
+        return
+      }
+
+      try {
+        const response = await fetch(`http://localhost:8000/api/tasks/${projectId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        })
+        console.log("API Response:", response);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`)
+        }
         const data = await response.json()
+        console.log("Fetched Tasks:", data);
         setTasks(data)
       } catch (error) {
         console.error("Error fetching tasks:", error)
@@ -39,13 +56,13 @@ export default function Tasks() {
   const handleCompleteTask = async (id: string) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === id ? { ...task, status: task.status === "pending" ? "completed" : "pending" } : task
+        task.id === id ? { ...task, status: task.status.toLowerCase() === "pending" ? "Done" : "Pending" } : task
       )
     )
   }
 
   const filteredTasks = tasks.filter((task) =>
-    activeTab === "pending" ? task.status === "pending" : task.status === "completed"
+    activeTab === "pending" ? task.status.toLowerCase() === "pending" : task.status.toLowerCase() === "done"
   )
 
   const TaskList = ({
@@ -64,7 +81,7 @@ export default function Tasks() {
               <p className="text-sm text-gray-500">{task.description}</p>
             </div>
             <Button onClick={() => onComplete(task.id)} className="bg-[#00E054] hover:bg-[#00E054]/90 text-white">
-              {task.status === "pending" ? "Complete" : "Reopen"}
+              {task.status.toLowerCase() === "pending" ? "Complete" : "Reopen"}
             </Button>
           </div>
         </Card>
