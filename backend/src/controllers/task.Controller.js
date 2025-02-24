@@ -64,6 +64,8 @@ export const getTasksByProject = async (req, res) => {
     if (!project) return res.status(404).json({ message: "Project not found" });
 
     const tasks = await Task.find({ project: projectId }).populate("assignedTo", "username email");
+    console.log("Fetched Tasks:", tasks);
+
     res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve tasks", error: error.message });

@@ -1,5 +1,6 @@
 "use client"
 import { useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -8,8 +9,14 @@ import { useProjectStore } from "@/lib/store/projectStore"
 import { useAuthStore } from "@/lib/store/authStore"; // Import Auth Store // Import Project Store
 
 export default function ActiveProjects() {
-  const { projects, fetchProjects } = useProjectStore();
-  const token = localStorage.getItem("authToken"); // Get token from Zustand
+  const { projects, fetchProjects, moveProject, removeProject } = useProjectStore();
+  const [token, setToken] = useState<string | null>(null);
+  //const token = localStorage.getItem("authToken"); // Get token from Zustand
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    setToken(token);
+  }, []); 
 
   useEffect(() => {
     if (token) {
@@ -38,7 +45,7 @@ export default function ActiveProjects() {
       <h2 className="text-xl font-bold">Active Projects</h2>
 
       <div className="grid gap-4">
-        {activeProjects.map((project) => (
+        {activeProjects?.map((project) => (
           <Card key={project.id} className="p-6">
             <div className="flex justify-between">
               <div>
