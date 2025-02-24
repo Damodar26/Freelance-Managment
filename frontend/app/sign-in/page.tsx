@@ -31,6 +31,7 @@ const login = async (email: string, password: string): Promise<void> => {
 
 const sendOTP = async (email: string): Promise<void> => {
   try {
+
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/send-otp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -74,6 +75,7 @@ const sendOTP = async (email: string): Promise<void> => {
     throw error; // ✅ Re-throw the error to be handled in `handleOTPVerification`
   }
 }
+
 
 
 
